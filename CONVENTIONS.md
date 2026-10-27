@@ -319,6 +319,30 @@ ETL 프로젝트의 저장소 (https://github.com/JoHyungJun/review_data_etl_pip
 6. 커밋, Push 및 병합은 개발자의 명시적인 승인 후에만 수행합니다. 비밀정보와 불필요한 생성물을 포함하지 않았는지 확인하고, 커밋 전 스테이징 내용을 검토합니다.
 7. PR 대상은 `develop`으로 합니다. 초기 기준 커밋 `2df038b`을 `main`과 `develop`에 Push해 원격 통합 브랜치를 마련했습니다. `develop`은 개발 PR의 기준 브랜치입니다. `main`의 릴리스/배포 역할은 아직 별도로 정하지 않았습니다.
 
+### 작업 단위별 브랜치 순환 절차
+
+각 작업 단위는 순차적으로 진행합니다. 이전 작업의 PR이 `develop`에 병합되고 로컬 `develop`을 최신화한 뒤 다음 작업 브랜치를 시작합니다.
+
+1. 작업을 시작하기 전에 현재 브랜치와 작업 트리 상태를 확인합니다. 작업 트리에 변경이 남아 있으면 이를 보존하고, 임의로 삭제하거나 stash/reset하지 않습니다.
+2. 직전 작업의 PR이 개발자 검토 및 승인 후 `develop`에 병합된 것을 확인합니다.
+3. 로컬 `develop`으로 이동하고 원격 변경을 fast-forward로 반영합니다.
+
+   ```bash
+   git switch develop
+   git pull --ff-only origin develop
+   ```
+
+4. 최신화된 `develop`에서 다음 작업 단위의 Issue 전용 브랜치를 새로 만듭니다. 브랜치 이름은 위의 `유형/영역/세부사항` 형식을 따릅니다.
+
+   ```bash
+   git switch -c feat/review/collect-api
+   ```
+
+5. 해당 브랜치에서 Issue 범위만 구현하고 검증합니다. 작업이 끝나면 브랜치를 Push하고 `develop` 대상 PR을 만듭니다.
+6. PR이 병합되기 전에는 다음 작업 단위의 브랜치를 만들지 않습니다. PR 병합 후 3단계부터 반복합니다.
+
+`develop`이나 `main`에서 직접 기능 작업을 하지 않습니다. 브랜치를 바꾸기 전 작업 트리가 깨끗한지 확인하며, 사용자 변경이 남아 있으면 안전하게 보존하는 방법을 먼저 정합니다.
+
 ### API request/response 및 ETL 연동
 
 - ETL 연동의 현재 확인 계약은 §5의 `POST /pipeline` 요청·응답 필드 및 오류 응답을 기준으로 합니다. Python 구현 방식 자체는 Spring 컨벤션으로 채택하지 않습니다.
